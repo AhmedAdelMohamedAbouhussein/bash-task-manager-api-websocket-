@@ -1,7 +1,15 @@
-// controllers/execBash.js
+
 import { spawn } from "child_process";
+import path from "path";
+import { fileURLToPath } from "url";
 
 let monitorProcess = null; // global reference
+
+// These two lines give you __dirname like in CommonJS
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// Build the absolute path to your script
+const scriptPath = path.join(__dirname, "../../test.sh");
 
 export const startMonitoring = (req, res, next) => 
 {
@@ -9,7 +17,7 @@ export const startMonitoring = (req, res, next) =>
         return res.status(400).json({ message: "Monitoring already running" });
     }
 
-    monitorProcess = spawn("bash", ["../../test.sh"]);
+    monitorProcess = spawn("bash", [scriptPath]);
 
     monitorProcess.stdout.on("data", data => 
     {

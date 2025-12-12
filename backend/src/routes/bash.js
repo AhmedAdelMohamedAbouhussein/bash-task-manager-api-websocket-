@@ -5,7 +5,7 @@ import { startMonitoring, stopMonitoring } from "../controllers/execBash.js";
 
 const router = express.Router();
 
-router.post("/start", startMonitoring);
-router.post("/stop", stopMonitoring);
+router.get("/start", startMonitoring);
+router.get("/stop", stopMonitoring);
 
 export default router;
