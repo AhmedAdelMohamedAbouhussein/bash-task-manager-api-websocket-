@@ -68,11 +68,11 @@ function gpu
 
         echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization GPU_Temperature=$GPU_Temperature" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"
     
-    elif command -v intel_gpu_top &> /dev/null; then #TODO
-        GPU_Utilization=$(sudo timout 20s intel_gpu_top)
-        echo "GPU Utilization: $GPU_Utilization"
+    #elif command -v intel_gpu_top &> /dev/null; then #TODO
+        #GPU_Utilization=$(sudo timout 20s intel_gpu_top)
+        #echo "GPU Utilization: $GPU_Utilization"
 
-        echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"
+        # echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"
     fi
 
     echo "===============================" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"

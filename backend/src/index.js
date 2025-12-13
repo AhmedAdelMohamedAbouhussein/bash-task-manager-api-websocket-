@@ -1,16 +1,21 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import http from "http";
+import cors from "cors";
+import { WebSocketServer } from "ws";
 
-import logger from './middleware/logger.js';
-import errorHandeler from './middleware/error.js';
-import notfound from './middleware/notfound.js';
+import logger from "./middleware/logger.js";
+import errorHandeler from "./middleware/error.js";
+import notfound from "./middleware/notfound.js";
 
-import bash from './routes/bash.js';
+import bash from "./routes/bash.js";
+import setupMonitorWS from "./ws/monitor.js";
 
 const app = express();
+const server = http.createServer(app);
 const PORT = 8000;
 
-app.use(express.json()); 
+/* middleware */
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
@@ -20,11 +25,18 @@ app.use(cors({
 
 app.use(logger);
 
-//routes
+/* routes */
 app.use("/bash", bash);
 
+/* websocket */
+const wss = new WebSocketServer({ server });
+setupMonitorWS(wss);
+
+/* errors */
 app.use(notfound);
 app.use(errorHandeler);
 
-
-app.listen(PORT, () => console.log(`Server running on: http://localhost:${PORT}/`));
+/* start server */
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
