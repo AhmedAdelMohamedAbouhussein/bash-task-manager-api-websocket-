@@ -17,6 +17,13 @@ export const startMonitoring = (req, res, next) =>
         return res.status(400).json({ message: "Monitoring already running" });
     }
 
+    // SSE headers
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    res.flushHeaders?.(); // important in some setups
+
     monitorProcess = spawn("bash", [scriptPath]);
 
     monitorProcess.stdout.on("data", data => 
@@ -34,7 +41,12 @@ export const startMonitoring = (req, res, next) =>
         monitorProcess = null; // reset reference
     });
 
-    res.json({ message: "Monitoring started" });
+    req.on("close", () => {
+        monitorProcess?.kill("SIGTERM");
+        monitorProcess = null;
+    });
+
+    //res.json({ message: "Monitoring started" });
 };
 
 
@@ -45,5 +57,6 @@ export const stopMonitoring = (req, res, next) => {
     }
 
     monitorProcess.kill("SIGTERM"); // send signal to stop the script
+    monitorProcess = null; // reset reference
     res.json({ message: "Monitoring stopped" });
 };

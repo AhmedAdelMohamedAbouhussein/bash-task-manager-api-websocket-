@@ -1,0 +1,66 @@
+.navbar {
+  width: 220px;
+  height: auto;
+  background: #1f2936;
+  color: rgb(255, 255, 255);
+  border-radius: 0 20px 20px 0;
+  z-index: 1000;
+  transition: width 0.3s ease; /* smooth open/close */
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  position: relative; /* for dropdown */
+}
+
+.arrow {
+  padding: 5px;
+  cursor: pointer;
+  transition: transform 0.3s ease; /* optional: rotate arrow */
+}
+
+.items {
+  border-top: 1px solid #a4a4a4;
+  border-bottom: 1px solid #a4a4a4;
+  flex-grow: 1; /* pushes bottom + account down */
+}
+
+.ulist{
+  padding: 0;
+}
+
+.listitems{
+  cursor: pointer;
+  list-style: none;
+  margin: 1.5em 0;
+  padding: 10px 0px 10px 0px;
+}
+
+.listitems:hover {
+  background-color: #695cfe;
+}
+
+.links {
+  color: rgb(255, 255, 255);
+  text-decoration: none; /* removes underline */
+}
+
+.hide{
+  width: 80px;
+}
+
+.hide .listitems {
+  justify-content: center; /* center icons horizontally */
+  padding-left: 0; /* remove leftover padding */
+}
+
+.hide .links{
+  display: none;
+}
+
+.hide .arrow{
+  margin-left: -10px;
+}
