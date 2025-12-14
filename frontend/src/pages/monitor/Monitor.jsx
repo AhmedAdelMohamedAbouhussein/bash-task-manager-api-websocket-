@@ -16,7 +16,6 @@ function Monitor() {
     const [diskData, setDiskData] = useState([]);
     const [networkData, setNetworkData] = useState([]);
 
-
     useEffect(() => {
         // Open WebSocket connection
         const socket = new WebSocket("ws://localhost:8000");
@@ -31,7 +30,6 @@ function Monitor() {
             const line = event.data;
             
             setLogs(prev => [...prev, line]);
-        
 
             const timestamp = new Date().toLocaleTimeString();
 
@@ -91,8 +89,6 @@ function Monitor() {
     };
 
 
-
-
     const renderChart = (data, dataKey, title, color) => (
         <div className={styles.chartContainer}>
             <h3>{title}</h3>
@@ -114,7 +110,7 @@ function Monitor() {
 
     return (
         <div className={styles.main}>
-            <Navbar />
+            {/*<Navbar />*/}
             <div className={styles.container}>
                 <div className={styles.top}>
                     <h2 className={styles.title}>Live Monitor</h2>

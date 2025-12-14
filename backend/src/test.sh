@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG_DIR="../system_reports"
+LOG_DIR="./system_reports"
 mkdir -p "$LOG_DIR"
 INTERVAL=10
 
@@ -17,9 +17,9 @@ function cpu
     echo "CPU Temperature: $Cputemp"
 
     CURRENT_TIME=$(date "+%Y-%m-%d-%Hh-%Mmin-%Ssec")
-    echo "$CURRENT_TIME: CPU=$Cpu CPU_TEMP=$Cputemp" >> "$REPORT_DIR/cpu_$TIMESTAMP.log"
+    echo "$CURRENT_TIME: CPU=$Cpu CPU_TEMP=$Cputemp" >> "$REPORT_DIR/cpu.log"
 
-    echo "===============================" >> "$REPORT_DIR/cpu_$TIMESTAMP.log"
+    echo "===============================" >> "$REPORT_DIR/cpu.log"
 }
 
 function memory
@@ -33,7 +33,7 @@ function memory
     echo "Memory Total: $mermoryTotal"
     
     CURRENT_TIME=$(date "+%Y-%m-%d-%Hh-%Mmin-%Ssec")
-    echo "$CURRENT_TIME: memoryUtilAverage=$memoryUtilAverage MemoryUsed=$memoryUsed MemoryTotal=$mermoryTotal" >> "$REPORT_DIR/memory_$TIMESTAMP.log"
+    echo "$CURRENT_TIME: memoryUtilAverage=$memoryUtilAverage MemoryUsed=$memoryUsed MemoryTotal=$mermoryTotal" >> "$REPORT_DIR/memory.log"
 
     # Get virtual memory 
     VMUtilAverage=$(free | awk '/Swap/ {printf("%3.1f", ($3/$2) * 100)}')
@@ -43,9 +43,9 @@ function memory
     VMTotal=$(free -m | awk '/Swap:/ {printf "%.2f GB\n", $2/1024}')
     echo "Virtual Memory Total: $VMTotal"
     
-    echo "$CURRENT_TIME: VMUtilAverage=$VMUtilAverage VMUsed=$VMUsed VMTotal=$VMTotal" >> "$REPORT_DIR/memory_$TIMESTAMP.log"
+    echo "$CURRENT_TIME: VMUtilAverage=$VMUtilAverage VMUsed=$VMUsed VMTotal=$VMTotal" >> "$REPORT_DIR/memory.log"
 
-    echo "===============================" >> "$REPORT_DIR/memory_$TIMESTAMP.log"
+    echo "===============================" >> "$REPORT_DIR/memory_.log"
 }
 
 function gpu
@@ -58,7 +58,7 @@ function gpu
         GPU_Temperature=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader)
         echo "GPU Temperature: $GPU_Temperature"
 
-        echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization GPU_Temperature=$GPU_Temperature" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"
+        echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization GPU_Temperature=$GPU_Temperature" >> "$REPORT_DIR/gpu.log"
 
     elif command -v rocm-smi &> /dev/null; then #TODO
         GPU_Utilization=$(rocm-smi --showuse | awk '/GPU/ {print $3}')
@@ -66,16 +66,16 @@ function gpu
         GPU_Temperature=$(rocm-smi --showtemp | awk '/GPU/ {print $3}')
         echo "GPU Temperature: $GPU_Temperature"
 
-        echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization GPU_Temperature=$GPU_Temperature" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"
+        echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization GPU_Temperature=$GPU_Temperature" >> "$REPORT_DIR/gpu.log"
     
     #elif command -v intel_gpu_top &> /dev/null; then #TODO
         #GPU_Utilization=$(sudo timout 20s intel_gpu_top)
         #echo "GPU Utilization: $GPU_Utilization"
 
-        # echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"
+        # echo "$CURRENT_TIME: GPU_Utilization=$GPU_Utilization" >> "$REPORT_DIR/gpu.log"
     fi
 
-    echo "===============================" >> "$REPORT_DIR/gpu_$TIMESTAMP.log"
+    echo "===============================" >> "$REPORT_DIR/gpu.log"
 }
 
 
@@ -96,16 +96,16 @@ function disk
             used=$(df -h "$mount" | awk 'NR==2 {print $3 " used"}')
             echo -e "$name\t$size\t$type\t$mount\t$used"
 
-            echo -e "$name\t$size\t$type\t$mount\t$used" >> "$REPORT_DIR/disk_$TIMESTAMP.log"
+            echo -e "$name\t$size\t$type\t$mount\t$used" >> "$REPORT_DIR/disk.log"
 
         else
             echo -e "$name\t$size\t$type\t$mount"
 
-            echo -e "$name\t$size\t$type\t$mount" >> "$REPORT_DIR/disk_$TIMESTAMP.log"
+            echo -e "$name\t$size\t$type\t$mount" >> "$REPORT_DIR/disk.log"
         fi
     done
 
-    echo "===============================" >> "$REPORT_DIR/disk_$TIMESTAMP.log"
+    echo "===============================" >> "$REPORT_DIR/disk.log"
 }
 
 function network
@@ -114,9 +114,9 @@ function network
     echo "Network Usage: $network_usage"
 
     CURRENT_TIME=$(date "+%Y-%m-%d-%Hh-%Mmin-%Ssec")
-    echo "$CURRENT_TIME: NetworkUsage=$network_usage" >> "$REPORT_DIR/network_$TIMESTAMP.log"
+    echo "$CURRENT_TIME: NetworkUsage=$network_usage" >> "$REPORT_DIR/network.log"
 
-    echo "===============================" >> "$REPORT_DIR/network_$TIMESTAMP.log"
+    echo "===============================" >> "$REPORT_DIR/network.log"
 }
 
 function smartStatus 
@@ -125,9 +125,9 @@ function smartStatus
     echo "SMART Info: $smart_info"
 
     CURRENT_TIME=$(date "+%Y-%m-%d-%Hh-%Mmin-%Ssec")
-    echo "$CURRENT_TIME: SMARTInfo=$smart_info" >> "$REPORT_DIR/smart_$TIMESTAMP.log"
+    echo "$CURRENT_TIME: SMARTInfo=$smart_info" >> "$REPORT_DIR/smart.log"
 
-    echo "===============================" >> "$REPORT_DIR/smart_$TIMESTAMP.log"
+    echo "===============================" >> "$REPORT_DIR/smart.log"
 
 }
 

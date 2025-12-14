@@ -1,0 +1,40 @@
+.container {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+.sidebar {
+    width: 300px;
+    border-right: 1px solid #ddd;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.folder {
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #f5f5f5;
+    transition: background 0.2s ease;
+}
+
+.folder:hover {
+    background: #e5e7eb;
+}
+
+.active {
+    background: #dbeafe;
+}
+
+.time {
+    font-size: 12px;
+    color: #555;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}

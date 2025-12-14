@@ -1,5 +1,4 @@
 import {Routes, Route} from 'react-router-dom'
-import StartScript from "./pages/startScript/StartScript.jsx";
 import Monitor from "./pages/monitor/Monitor.jsx";
 import Report from "./pages/reports/Reports.jsx";
 import CPU from "./pages/cpu/CPU.jsx"
@@ -12,8 +11,7 @@ import RAM from "./pages/ram/RAM.jsx"
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<StartScript />} />
-      <Route path="/monitor" element={<Monitor />} />
+      <Route path="/" element={<Monitor />} />
       <Route path="/report" element={<Report />} />
 
       <Route path="/cpu" element={<CPU />} />

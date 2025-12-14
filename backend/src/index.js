@@ -7,7 +7,7 @@ import logger from "./middleware/logger.js";
 import errorHandeler from "./middleware/error.js";
 import notfound from "./middleware/notfound.js";
 
-import bash from "./routes/bash.js";
+import reports from "./routes/reports.js";
 import setupMonitorWS from "./ws/monitor.js";
 
 const app = express();
@@ -26,7 +26,7 @@ app.use(cors({
 app.use(logger);
 
 /* routes */
-app.use("/bash", bash);
+app.use("/reports", reports);
 
 /* websocket */
 const wss = new WebSocketServer({ server });
