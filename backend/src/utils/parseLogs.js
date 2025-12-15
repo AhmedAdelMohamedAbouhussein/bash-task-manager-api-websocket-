@@ -89,37 +89,40 @@ export const parseDiskLog = (filePath) => {
     let currentDisk = null;
 
     for (const line of lines) {
-        // New snapshot (timestamp)
-        const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}-\d{2}h-\d{2}min-\d{2}sec):/);
-        if (timestampMatch) {
-            const timestamp = timestampMatch[1];
-            if (!currentSnapshot || currentSnapshot.timestamp !== timestamp) {
-                currentSnapshot = { timestamp, disks: [] };
-                snapshots.push(currentSnapshot);
-                currentDisk = null;
-            }
+        // Extract timestamp and rest of line
+        const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}-\d{2}h-\d{2}min-\d{2}sec):\s*(.*)/);
+        if (!timestampMatch) continue;
 
-            // Disk line
-            const diskMatch = line.match(/disk: (\S+)\s+(\S+)/);
-            if (diskMatch) {
-                const [name, size] = diskMatch;
-                currentDisk = { name, size, partitions: [] };
-                currentSnapshot.disks.push(currentDisk);
-                continue;
-            }
+        const timestamp = timestampMatch[1];
+        const contentLine = timestampMatch[2];
 
-            // Partition line
-            const partitionMatch = line.match(
-                /partition: (\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+))?(?:\s+([\d.]+[KMGT]?) used)?(?:\s+(\d+%)?)?/
-            );
-            if (partitionMatch && currentDisk) {
-                const [, name, size, type, mount, used, usePercent] = partitionMatch;
-                const partition = { name, size, type };
-                if (mount) partition.mount = mount;
-                if (used) partition.used = used;
-                if (usePercent) partition.usePercent = usePercent;
-                currentDisk.partitions.push(partition);
-            }
+        // Start new snapshot if needed
+        if (!currentSnapshot || currentSnapshot.timestamp !== timestamp) {
+            currentSnapshot = { timestamp, disks: [] };
+            snapshots.push(currentSnapshot);
+            currentDisk = null;
+        }
+
+        // Disk line
+        const diskMatch = contentLine.match(/^disk:\s*(\S+)\s+(\S+)/);
+        if (diskMatch) {
+            const [, name, size] = diskMatch;
+            currentDisk = { name, size, partitions: [] };
+            currentSnapshot.disks.push(currentDisk);
+            continue;
+        }
+
+        // Partition line
+        const partitionMatch = contentLine.match(
+            /^partition:\s*(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+))?(?:\s+([\d.]+[KMGT]?)\s*used)?(?:\s+(\d+%)?)?/
+        );
+        if (partitionMatch && currentDisk) {
+            const [, name, size, type, mount, used, usePercent] = partitionMatch;
+            const partition = { name, size, type };
+            if (mount) partition.mount = mount;
+            if (used) partition.used = used;
+            if (usePercent) partition.usePercent = usePercent;
+            currentDisk.partitions.push(partition);
         }
     }
 

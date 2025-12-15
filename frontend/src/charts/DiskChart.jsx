@@ -1,68 +1,70 @@
 import React from "react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LabelList
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer
 } from "recharts";
 
-export default function DiskBarChart({ diskSnapshots = [] }) {
-  if (!diskSnapshots.length) return <p style={{ color: "#fff" }}>No Disk Data Available</p>;
+export default function DiskLineChart({ diskSnapshots = [] }) {
+    if (!diskSnapshots.length) return <p style={{ color: "#fff" }}>No Disk Data Available</p>;
 
-  const latest = diskSnapshots[diskSnapshots.length - 1];
-  if (!latest.disks || !latest.disks.length) return <p style={{ color: "#fff" }}>No Disks Found</p>;
-
-  const parseSize = (size) => {
-    if (!size) return 0;
-    const unit = size.slice(-1).toUpperCase();
-    const num = parseFloat(size);
-    switch (unit) {
-      case "K": return num / 1024 / 1024;
-      case "M": return num / 1024;
-      case "G": return num;
-      case "T": return num * 1024;
-      default: return num;
-    }
-  };
-
-  const chartData = latest.disks.map((disk) => {
-    const total = parseSize(disk.size);
-    const used = disk.partitions.reduce((acc, p) => acc + parseSize(p.used || "0"), 0);
-    return {
-      name: disk.name,
-      used,
-      free: Math.max(total - used, 0)
+    const parseSize = (size) => {
+        if (!size) return 0;
+        const unit = size.slice(-1).toUpperCase();
+        const num = parseFloat(size);
+        switch (unit) {
+            case "K": return num / 1024 / 1024;
+            case "M": return num / 1024;
+            case "G": return num;
+            case "T": return num * 1024;
+            default: return num;
+        }
     };
-  });
 
-  return (
-    <div style={{ backgroundColor: "#0a1f3c", padding: "15px", borderRadius: "12px" }}>
-      <ResponsiveContainer width="100%" height={350}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#2a3b5f" />
-          <XAxis dataKey="name" stroke="#fff" />
-          <YAxis stroke="#fff" unit=" GB" />
-          <Tooltip
-            contentStyle={{ backgroundColor: "#1a2a4f", border: "none", color: "#fff" }}
-            formatter={(value) => `${value.toFixed(2)} GB`}
-          />
-          <Legend wrapperStyle={{ color: "#fff" }} />
-          <Bar dataKey="used" stackId="a" fill="#ff6b6b">
-            <LabelList dataKey="used" position="insideTop" fill="#fff" formatter={(val) => val.toFixed(1)} />
-          </Bar>
-          <Bar dataKey="free" stackId="a" fill="#4ecdc4">
-            <LabelList dataKey="free" position="insideTop" fill="#fff" formatter={(val) => val.toFixed(1)} />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
+    // Flatten snapshots into chart data
+    const chartData = diskSnapshots.map(snapshot => {
+        const point = { time: snapshot.timestamp };
+        snapshot.disks.forEach(disk => {
+            const used = disk.partitions.reduce((acc, p) => acc + parseSize(p.used || "0"), 0);
+            point[disk.name] = used;
+        });
+        return point;
+    });
+
+    // Collect disk names from latest snapshot
+    const latest = diskSnapshots[diskSnapshots.length - 1];
+    const diskNames = latest.disks.map(disk => disk.name);
+
+    const diskColors = ["#ff6b6b", "#4ecdc4", "#ffa500", "#8884d8", "#a28fd0"];
+
+    return (
+        <div style={{ backgroundColor: "#0a1f3c", padding: "20px", borderRadius: "12px" }}>
+            <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a3b5f" />
+                    <XAxis dataKey="time" stroke="#fff" />
+                    <YAxis stroke="#fff" unit=" GB" />
+                    <Tooltip contentStyle={{ backgroundColor: "#1a2a4f", border: "none", color: "#fff" }} />
+                    <Legend wrapperStyle={{ color: "#fff" }} />
+                    {diskNames.map((name, idx) => (
+                        <Line
+                            key={name}
+                            type="monotone"
+                            dataKey={name}
+                            stroke={diskColors[idx % diskColors.length]}
+                            strokeWidth={2}
+                            dot={false}
+                            isAnimationActive={true}
+                            animationDuration={800}
+                        />
+                    ))}
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
 }

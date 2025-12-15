@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from 'react-router-dom';
+import {FaArrowLeft} from "react-icons/fa";
 
 import CpuGpuChart from "../../charts/CpuGpuChart";
-import {FaArrowLeft} from "react-icons/fa";
 import DiskBarChart from "../../charts/DiskCircularBar";
 import MemoryLineChart from "../../charts/MemoryLineChart";
+import DiskChart from "../../charts/DiskChart"
+
 import styles from "./Reports.module.css";
 
 function Reports() {
@@ -62,6 +64,7 @@ function Reports() {
                 {/* RAM + Virtual Memory Line Chart */}
                 <MemoryLineChart ram={memory.ram} virtual={memory.virtual} />
                 <DiskBarChart diskSnapshots={disks} />
+                <DiskChart diskSnapshots={disks} />
             </div>
         );
     };
