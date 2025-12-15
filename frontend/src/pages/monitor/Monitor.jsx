@@ -6,17 +6,18 @@ import CpuGpuChart from "../../charts/CpuGpuChart";
 import DiskBarChart from "../../charts/DiskCircularBar";
 import MemoryCircular from "../../charts/MemoryCircular";
 import MemoryLineChart from "../../charts/MemoryLineChart";
+import DiskHistogram from "../../charts/DiskHistogram"
+import NetworkChart from "../../charts/NetworkChart";
 
 function Monitor() {
     const socketRef = useRef(null);
 
     const [cpuData, setCpuData] = useState([]);
     const [gpuData, setGpuData] = useState([]);
-
     const [ramData, setRamData] = useState([]);
     const [virtualData, setVirtualData] = useState([]);
-
     const [diskSnapshots, setDiskSnapshots] = useState([]);
+    const [networkData, setNetworkData] = useState([]);
 
     // Function to generate backend-style timestamp
     const getBackendStyleTime = () => {
@@ -42,7 +43,6 @@ function Monitor() {
 
         socket.onmessage = (event) => {
             let line = event.data.trim();
-            //console.log(line);
 
             const time = getBackendStyleTime();
 
@@ -58,6 +58,23 @@ function Monitor() {
             if (line.startsWith("CPU Temperature:")) {
                 const temperature = parseFloat(line.split(":")[1]);
                 setCpuData(prev => [
+                    ...prev.slice(0, -1),
+                    { ...prev.at(-1), temperature }
+                ]);
+            }
+
+            /* ================= GPU ================= */
+            if (line.startsWith("GPU Usage:")) {
+                const usage = parseFloat(line.split(":")[1]);
+                setGpuData(prev => [
+                    ...prev,
+                    { time, usage, temperature: prev.at(-1)?.temperature ?? 0 }
+                ]);
+            }
+
+            if (line.startsWith("GPU Temperature:")) {
+                const temperature = parseFloat(line.split(":")[1]);
+                setGpuData(prev => [
                     ...prev.slice(0, -1),
                     { ...prev.at(-1), temperature }
                 ]);
@@ -127,7 +144,6 @@ function Monitor() {
                 if (currentSnapshot) {
                     // Replace the state entirely with the current snapshot
                     setDiskSnapshots([structuredClone(currentSnapshot)]);
-                    console.log('Saved snapshot:', structuredClone(currentSnapshot));
                 }
                 currentSnapshot = { time: timestamp, disks: [] };
             }
@@ -139,7 +155,6 @@ function Monitor() {
                 const size = parts[2];
                 currentSnapshot.disks.push({ name, size, partitions: [] });
             }
-
 
             if (line.startsWith("partition:")) {
                 const parts = line.split(" ");
@@ -154,6 +169,52 @@ function Monitor() {
             
                 currentSnapshot.disks.at(-1)?.partitions.push(partition);
             }
+
+            /* ================= NETWORK ================= */
+            if (line.startsWith("Network Traffic:")) {
+                const ifaceMatch = line.match(/Interface:\s*([^|]+)/);
+                const incomingMatch = line.match(/Incoming_Bytes_Total:\s*(\d+)/);
+                const outgoingMatch = line.match(/Outgoing_Bytes_Total:\s*(\d+)/);
+            
+                if (!ifaceMatch || !incomingMatch || !outgoingMatch) return;
+            
+                const now = Date.now();
+                const incomingTotal = Number(incomingMatch[1]);
+                const outgoingTotal = Number(outgoingMatch[1]);
+                const iface = ifaceMatch[1].trim();
+            
+                setNetworkData(prev => {
+                    let incomingBps = 0;
+                    let outgoingBps = 0;
+                
+                    const last = prev.at(-1);
+                
+                    if (last && last.interface === iface) {
+                        const deltaTimeSec = (now - last.timestamp) / 1000;
+                    
+                        if (deltaTimeSec > 0) {
+                            incomingBps =
+                                (incomingTotal - last.incomingTotal) / deltaTimeSec;
+                            outgoingBps =
+                                (outgoingTotal - last.outgoingTotal) / deltaTimeSec;
+                        }
+                    }
+                
+                    return [
+                        ...prev,
+                        {
+                            time,
+                            timestamp: now,
+                            interface: iface,
+                            incomingTotal,
+                            outgoingTotal,
+                            incomingBps,
+                            outgoingBps
+                        }
+                    ];
+                });
+            }
+
 
         };
 
@@ -175,6 +236,8 @@ function Monitor() {
         }
     };
 
+
+    
     return (
         <div className={styles.main}>
             <Navbar />
@@ -193,12 +256,16 @@ function Monitor() {
                 </div>
 
                 {/* ===== Charts ===== */}
-                <div className={styles.chartGrid}>
-                    <CpuGpuChart cpuData={cpuData} gpuData={gpuData} />
-                    <MemoryCircular ram={ramData} virtual={virtualData} />
-                    <MemoryLineChart ram={ramData} virtual={virtualData} />
-                    <DiskBarChart diskSnapshots={diskSnapshots} />
-                </div>
+<div className={styles.output}>
+    <div className={styles.metrics}>
+        <CpuGpuChart cpuData={cpuData} gpuData={gpuData} />
+        <MemoryCircular ram={ramData} virtual={virtualData} />
+        <MemoryLineChart ram={ramData} virtual={virtualData} />
+        <NetworkChart data={networkData} />
+        <DiskBarChart diskSnapshots={diskSnapshots} />
+        <DiskHistogram diskSnapshots={diskSnapshots} />
+    </div>
+</div>
 
             </div>
         </div>

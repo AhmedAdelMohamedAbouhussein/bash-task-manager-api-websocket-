@@ -7,6 +7,7 @@ import CpuGpuChart from "../../charts/CpuGpuChart";
 import DiskBarChart from "../../charts/DiskCircularBar";
 import MemoryLineChart from "../../charts/MemoryLineChart";
 import DiskChart from "../../charts/DiskChart"
+import NetworkChart from "../../charts/NetworkChart";
 
 import styles from "./Reports.module.css";
 
@@ -56,13 +57,14 @@ function Reports() {
     const renderMetrics = () => {
         if (!folderData) return null;
 
-        const { cpu, gpu, memory, disk: disks } = folderData;
+        const { cpu, gpu, memory, disk: disks, network} = folderData;
 
         return (
             <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
                 <CpuGpuChart cpuData={cpu} gpuData={gpu} />
                 {/* RAM + Virtual Memory Line Chart */}
                 <MemoryLineChart ram={memory.ram} virtual={memory.virtual} />
+                <NetworkChart data={network} />
                 <DiskBarChart diskSnapshots={disks} />
                 <DiskChart diskSnapshots={disks} />
             </div>

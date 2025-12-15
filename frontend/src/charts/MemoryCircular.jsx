@@ -14,15 +14,15 @@ export default function MemoryCircular({ ram = [], virtual = [] }) {
         <CircularProgressbar
           value={latestRam.usagePercent}
           text={`${latestRam.usagePercent}%`}
-          styles={buildStyles({ pathColor: "#8884d8", textColor: "#333" })}
+          styles={buildStyles({ pathColor: "#8884d8", textColor: "#ffffffff" })}
         />
       </div>
       <div style={{ width: 120 }}>
-        <h4>Virtual Memory</h4>
+        <h4>Virtual M.</h4>
         <CircularProgressbar
           value={latestVM.usagePercent}
           text={`${latestVM.usagePercent}%`}
-          styles={buildStyles({ pathColor: "#82ca9d", textColor: "#333" })}
+          styles={buildStyles({ pathColor: "#82ca9d", textColor: "#ffffffff" })}
         />
       </div>
     </div>

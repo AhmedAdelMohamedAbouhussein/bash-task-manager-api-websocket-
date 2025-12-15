@@ -27,7 +27,7 @@ export const parseGpuLog = (filePath) => {
     const gpuData = [];
 
     for (const line of lines) {
-        const match = line.match(/(\d{4}-\d{2}-\d{2}-\d{2}h-\d{2}min-\d{2}sec): GPU Usage=([\d.]+) GPU Temp=([\d.]+)/);
+        const match = line.match(/(\d{4}-\d{2}-\d{2}-\d{2}h-\d{2}min-\d{2}sec): GPU Usage: ([\d.]+)% GPU Temperature:([\d.]+)°C/);
         if (match) {
             gpuData.push({
                 time: match[1],
@@ -114,7 +114,7 @@ export const parseDiskLog = (filePath) => {
 
         // Partition line
         const partitionMatch = contentLine.match(
-            /^partition:\s*(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+))?(?:\s+([\d.]+[KMGT]?)\s*used)?(?:\s+(\d+%)?)?/
+            /^partition\s*:\s*(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+))?(?:\s+([\d.]+[KMGT]?)\s*used)?(?:\s+(\d+%)?)?/
         );
         if (partitionMatch && currentDisk) {
             const [, name, size, type, mount, used, usePercent] = partitionMatch;
@@ -131,15 +131,66 @@ export const parseDiskLog = (filePath) => {
 
 
 export const parseNetworkLog = (filePath) => {
-    const content = fs.readFileSync(filePath, "utf-8");
-    
-    const received = content.match(/Network Received:\s*(\d+)/)?.[1];
-    const transmitted = content.match(/Network Transmitted:\s*(\d+)/)?.[1];
-    return {
-        received: received ? Number(received) : null,
-        transmitted: transmitted ? Number(transmitted) : null
-    };
+  const lines = fs
+    .readFileSync(filePath, "utf-8")
+    .split("\n")
+    .filter(line => line.includes("Network Traffic"));
+
+  const networkData = [];
+
+  // Helper: parse custom timestamp into milliseconds
+  const parseTime = (timeStr) => {
+    const match = timeStr.match(
+      /(\d{4})-(\d{2})-(\d{2})-(\d{2})h-(\d{2})min-(\d{2})sec/
+    );
+    if (!match) return null;
+    const [_, Y, M, D, h, m, s] = match;
+    return new Date(`${Y}-${M}-${D}T${h}:${m}:${s}`).getTime();
+  };
+
+  for (const line of lines) {
+    const timeMatch = line.match(/^(\d{4}-\d{2}-\d{2}-\d{2}h-\d{2}min-\d{2}sec)/);
+    const ifaceMatch = line.match(/Interface:\s*([^|]+)/);
+    const incomingMatch = line.match(/Incoming_Bytes_Total:\s*(\d+)/);
+    const outgoingMatch = line.match(/Outgoing_Bytes_Total:\s*(\d+)/);
+
+    if (!timeMatch || !ifaceMatch || !incomingMatch || !outgoingMatch) continue;
+
+    const time = timeMatch[1];
+    const timestamp = parseTime(time);
+    if (timestamp === null) continue;
+
+    const iface = ifaceMatch[1].trim();
+    const incomingTotal = Number(incomingMatch[1]);
+    const outgoingTotal = Number(outgoingMatch[1]);
+
+    let incomingBps = 0;
+    let outgoingBps = 0;
+
+    const last = networkData.at(-1);
+
+    if (last && last.interface === iface) {
+      const deltaTimeSec = (timestamp - last.timestamp) / 1000;
+      if (deltaTimeSec > 0) {
+        incomingBps = Math.max((incomingTotal - last.incomingTotal) / deltaTimeSec, 0);
+        outgoingBps = Math.max((outgoingTotal - last.outgoingTotal) / deltaTimeSec, 0);
+      }
+    }
+
+    networkData.push({
+      time,
+      timestamp,
+      interface: iface,
+      incomingTotal,
+      outgoingTotal,
+      incomingBps: Math.round(incomingBps),
+      outgoingBps: Math.round(outgoingBps),
+    });
+  }
+
+  return networkData;
 };
+
 
 export const smartstatusLog = (filePath) => {
     const content = fs.readFileSync(filePath, "utf-8");
