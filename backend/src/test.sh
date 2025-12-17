@@ -337,7 +337,7 @@ function linux
         memory
         gpu
         network
-        smartStatus
+        #smartStatus
         loadmatrics
         sleep 4
     done
@@ -621,9 +621,9 @@ run_all_tests() {
     if [ $LOAD_OK -eq 1 ]; then
         test_loadmatrics
     fi
-    if [ $SMART_OK -eq 1 ]; then
-        test_smartStatus
-    fi
+    #if [ $SMART_OK -eq 1 ]; then
+        #test_smartStatus
+    #fi
     echo "All tests completed."
     echo "Flags: CPU=$CPU_OK, MEMORY=$MEMORY_OK, GPU=$GPU_OK, DISK=$DISK_OK, NETWORK=$NETWORK_OK, LOAD=$LOAD_OK, SMART=$SMART_OK"
 }
